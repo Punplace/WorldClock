@@ -14,3 +14,6 @@ WorldClock
 ### tools
 * laser cutter
 
+### library
+* Adafruit NeoPixel
+
