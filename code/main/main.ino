@@ -8,7 +8,8 @@
 
 #include <ESP8266WiFi.h>
 #include "CUSTOM_SETTING.hpp"
-#include <Adafruit_NeoPixel.h>
+#include "WorldClock_LED.hpp"
+//#include <Adafruit_NeoPixel.h>
 //#include "library/Adafruit_NeoPixel/Adafruit_NeoPixel.cpp"
 
 static bool WiFi_is_Connected;
@@ -35,7 +36,7 @@ inline void Check_WiFi_Status()
     }
 }
 
-Adafruit_NeoPixel * LED_strip;
+WorldClock_LED * LED_strip;
 
 void setup()
 {
@@ -49,11 +50,8 @@ void setup()
     Check_WiFi_Status();
     //ETS_GPIO_INTR_ENABLE();
 
-    LED_strip = new Adafruit_NeoPixel(169, LED_WIRED_PIN, NEO_GRB + NEO_KHZ800);
+    LED_strip = new WorldClock_LED(169, LED_WIRED_PIN, NEO_GRB + NEO_KHZ800);
     LED_strip->begin();
-    LED_strip->show();
-    for(int i = 0;i < 169;i++)
-        LED_strip->setPixelColor(i, 255, 0, 255);
     LED_strip->show();
 }
 
@@ -61,5 +59,21 @@ void loop()
 {
 ////////////////////// check if WIFI still connected //////////////////////
     Check_WiFi_Status();
+
+    int hour = random(0, 23);
+    int minute = random(0, 59);
+    int temperature = random(0, 99);
+    int humidity = random(0, 99);
+    LED_strip->clear();
+    LED_strip->show_greeting(hour);
+    LED_strip->show_minute(minute);
+    LED_strip->show_hour(hour, minute);
+    delay(2500);
+    LED_strip->clear();
+    LED_strip->show_temperature(temperature);
+    delay(2500);
+    LED_strip->clear();
+    LED_strip->show_humidity(humidity);
+    delay(2500);
 }
 
