@@ -18,3 +18,9 @@ WorldClock
 ### library
 * [Adafruit NeoPixel](https://learn.adafruit.com/adafruit-neopixel-uberguide/arduino-library-installation)
 * [DHT-sensor-library](https://learn.adafruit.com/dht/using-a-dhtxx-sensor)
+
+#### installation
+1. Downaload ZIP file from GitHub
+    * [adafruit/Adafruit_NeoPixel](https://github.com/adafruit/Adafruit_NeoPixel/archive/master.zip)
+    * [adafruit/Adafruit_Sensor](https://github.com/adafruit/Adafruit_Sensor/archive/master.zip)
+2. Goto `Sketch > Include Library > Add .ZIP Library` and choose the file you just download.
