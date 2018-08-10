@@ -1,9 +1,12 @@
 [submodule "code/main/library/Adafruit_NeoPixel"]
-	path = code/main/library/Adafruit_NeoPixel
+	path = code/library/Adafruit_NeoPixel
 	url = https://github.com/adafruit/Adafruit_NeoPixel.git
 [submodule "code/main/library/Adafruit-GFX-Library"]
-	path = code/main/library/Adafruit-GFX-Library
+	path = code/library/Adafruit-GFX-Library
 	url = https://github.com/adafruit/Adafruit-GFX-Library.git
 [submodule "code/main/library/Adafruit_NeoMatrix"]
-	path = code/main/library/Adafruit_NeoMatrix
+	path = code/library/Adafruit_NeoMatrix
 	url = https://github.com/adafruit/Adafruit_NeoMatrix.git
+[submodule "code/library/DHT-sensor-library"]
+	path = code/library/DHT-sensor-library
+	url = https://github.com/adafruit/DHT-sensor-library.git
