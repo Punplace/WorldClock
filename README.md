@@ -23,4 +23,7 @@ WorldClock
 1. Downaload ZIP file from GitHub
     * [adafruit/Adafruit_NeoPixel](https://github.com/adafruit/Adafruit_NeoPixel/archive/master.zip)
     * [adafruit/Adafruit_Sensor](https://github.com/adafruit/Adafruit_Sensor/archive/master.zip)
+    * [adafruit/DHT-sensor-library](https://github.com/adafruit/DHT-sensor-library/archive/master.zip)
+    * [PaulStoffregen/Time](https://github.com/PaulStoffregen/Time/archive/master.zip)
+    * [JChristensen/DS3232RTC](https://github.com/JChristensen/DS3232RTC/archive/master.zip)
 2. Goto `Sketch > Include Library > Add .ZIP Library` and choose the file you just download.
