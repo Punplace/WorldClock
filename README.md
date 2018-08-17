@@ -18,6 +18,8 @@ WorldClock
 ### library
 * [Adafruit NeoPixel](https://learn.adafruit.com/adafruit-neopixel-uberguide/arduino-library-installation)
 * [DHT-sensor-library](https://learn.adafruit.com/dht/using-a-dhtxx-sensor)
+* [PaulStoffregen/Time](https://github.com/PaulStoffregen/Time)
+* [JChristensen/DS3232RTC](https://github.com/JChristensen/DS3232RTC)
 
 #### installation
 1. Downaload ZIP file from GitHub
