@@ -1,14 +1,8 @@
 /*---------------------------------------WS2812b------------------------------------------*/
-#include <Adafruit_GFX.h>
-#include <Adafruit_NeoMatrix.h>
 #include <Adafruit_NeoPixel.h>
 
 #define PIN D5
 #define NUMBER 169
-Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(13, 13, PIN,
-                            NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
-                            NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG,
-                            NEO_GRB            + NEO_KHZ800);
 
 Adafruit_NeoPixel Guan = Adafruit_NeoPixel( NUMBER, PIN, NEO_GRB + NEO_KHZ800);
 
@@ -128,8 +122,10 @@ const int TEMHUM[2][3] = {
 #include <WiFiUdp.h>
 #include <TimeLib.h>
 #define Timezone +8
-char ssid[] = "Panmedia";  //  your network SSID (name)
-char pass[] = "40666888";       // your network password
+//char ssid[] = "Panmedia";  //  your network SSID (name)
+//char pass[] = "40666888";       // your network password
+char ssid[] = "Shen Family Mansion";  //  your network SSID (name)
+char pass[] = "guest@shen";       // your network password
 
 unsigned int localPort = 2390;      // local port to listen for UDP packets
 /* Don't hardwire the IP address or we won't get the benefits of the pool.
@@ -142,9 +138,10 @@ byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing pack
 // A UDP instance to let us send and receive packets over UDP
 WiFiUDP udp;
 /*---------------------------------------DHT11------------------------------------------*/
-#include <dht.h> // include DHT11 library  
+#include "DHT.h" // include DHT11 library  
 #define dht_dpin D3 // DHT11 signal input form Pin4 
-dht DHT; // initail DHT11 sensor
+#define DHTTYPE DHT11
+DHT dht(dht_dpin, DHTTYPE); // initail DHT11 sensor
 /*---------------------------------------DS3231------------------------------------------*/
 #include <Wire.h> // IIC Comunication
 #define DS3231_I2C_ADDRESS 0x68
@@ -192,20 +189,22 @@ void setup() {
   NTPClientRTC();
   Serial.println("RTC Calibration in Setup Sucessfully");
   Serial.println("****************************************");
+
+  dht.begin();
 }
 /*---------------------------------------Loop------------------------------------------*/
 void loop() {
-  NTPClientRTC();//
-  //    displayTime();//
+    NTPClientRTC();//
+    displayTime();//
   //    Humidity_temperature();
-  clearall(); //
-  ShowTime1(); //
-  rainbow(10);
-  clearall(); //
-  Showtemperature(); //
-  clearall(); //
-  ShowHumidity(); //
-  clearall(); //
+    //clearall(); //
+    //ShowTime1(); //
+    //rainbow(10);
+    //clearall(); //
+    //Showtemperature(); //
+    //clearall(); //
+    //ShowHumidity(); //
+    //clearall(); //
 }
 /*---------------------------------------NTP W/ RTC calibration------------------------------------------*/
 void NTPClientRTC() {
@@ -369,7 +368,7 @@ void displayTime() {
     Serial.print("0");
   }
   Serial.println(second, DEC);
-  delay(300);
+  delay(3000);
 }
 /*---------------------------------------DS3231 Led ShowTime1------------------------------------------*/
 void ShowTime1() {
@@ -543,20 +542,18 @@ void ShowTime1() {
 }
 /*------------------------------DHT11 display temperature amd humidity----------------------------*/
 void Humidity_temperature() {
-  DHT.read11(dht_dpin);
   Serial.print("Temperature = ");
-  Serial.print(DHT.temperature);
+  Serial.print(dht.readTemperature());
   Serial.print("C,");
   Serial.print("Humidity = ");
-  Serial.print(DHT.humidity);
+  Serial.print(dht.readHumidity());
   Serial.println("%");
   delay(50);//每2500ms更新一次
 }
 /*------------------------------------Led Humidity_temperature--------------------------------*/
 void Showtemperature() {
-  DHT.read11(dht_dpin);
-  ShowTendigitShow(byte(DHT.temperature) / 10);
-  ShowDigitsNumberShow(byte(DHT.temperature) % 10);
+  ShowTendigitShow(byte(dht.readTemperature()) / 10);
+  ShowDigitsNumberShow(byte(dht.readTemperature()) % 10);
   for (int i = 0 ; i <= TEMHUM[0][1]; i++) {
     Guan.setPixelColor(TEMHUM[0][0] - i, red[random(0, 255)], green[random(0, 255)], blue[random(0, 255)]);
     Guan.show();
@@ -564,9 +561,8 @@ void Showtemperature() {
   }
 }
 void ShowHumidity() {
-  DHT.read11(dht_dpin);
-  ShowTendigitShow(byte(DHT.humidity) / 10);
-  ShowDigitsNumberShow(byte(DHT.humidity) % 10);
+  ShowTendigitShow(byte(dht.readHumidity()) / 10);
+  ShowDigitsNumberShow(byte(dht.readHumidity()) % 10);
   for (int i = 0 ; i <= TEMHUM[1][1]; i++) {
     Guan.setPixelColor(TEMHUM[1][0] - i, red[random(0, 255)], green[random(0, 255)], blue[random(0, 255)]);
     Guan.show();

@@ -27,10 +27,16 @@ void printDigits(int digits);
 void sendNTPpacket(IPAddress &NTP_address);
 
 // Sync
+extern "C"
+{
+    #include "user_interface.h"
+}
 void sync_RTC_NTP();
 static bool sync_RTC_NTP_succeed = false;
+/*
 static os_timer_t sync_timer;
 void timer_callback_f(void* arg);
+*/
 
 // WiFi
 static bool WiFi_is_Connected;
@@ -79,23 +85,45 @@ void setup()
     //setSyncProvider(RTC.get);
     //setSyncInterval(300);
 
+/*
     //timer usage:https://www.espressif.com/sites/default/files/documentation/2c-esp8266_non_os_sdk_api_reference_en.pdf
     //3.1. Software Timer
     os_timer_setfn(&sync_timer, timer_callback_f, NULL);
-    os_timer_arm(&sync_timer, 60000, true); //parameter 2 => milliseconds between sync, 3 => repeat
+    os_timer_arm(&sync_timer, 30000, true); //parameter 2 => milliseconds between sync, 3 => repeat
+*/
 }
 
 void loop()
 {
     Check_WiFi_Status();    //check if WIFI still connected
-
-    static time_t prevDisplay = 0; // when the digital clock was displayed
-    if (timeStatus() != timeNotSet)
-    {
-        if (now() != prevDisplay)   //update the display only if time has changed
-        {
-            prevDisplay = now();
-            print_digitalClock(prevDisplay);
+    print_digitalClock(RTC.get());
+    delay(3000);
+    sync_RTC_NTP();
+    delay(3000);
+    if (Serial.available() >= 12) {
+        // note that the tmElements_t Year member is an offset from 1970,
+        // but the RTC wants the last two digits of the calendar year.
+        // use the convenience macros from the Time Library to do the conversions.
+        tmElements_t tm;
+        int y = Serial.parseInt();
+        if (y >= 100 && y < 1000)
+            Serial.println("Error: Year must be two digits or four digits!");
+        else {
+            if (y >= 1000)
+                tm.Year = CalendarYrToTm(y);
+            else    // (y < 100)
+                tm.Year = y2kYearToTm(y);
+            tm.Month = Serial.parseInt();
+            tm.Day = Serial.parseInt();
+            tm.Hour = Serial.parseInt();
+            tm.Minute = Serial.parseInt();
+            tm.Second = Serial.parseInt();
+            time_t newtime = makeTime(tm);
+            RTC.set(newtime);        // use the time_t value to ensure correct weekday is set
+            Serial.print("RTC set to: ");
+            print_digitalClock(newtime);
+            // dump any extraneous input
+            while (Serial.available() > 0) Serial.read();
         }
     }
 }
@@ -188,6 +216,7 @@ void sendNTPpacket(IPAddress &NTP_address)
 void sync_RTC_NTP()
 {
     time_t ntp_time = getNtpTime();
+    print_digitalClock(ntp_time);
     if(!ntp_time)
     {
         sync_RTC_NTP_succeed = false;
@@ -201,7 +230,11 @@ void sync_RTC_NTP()
     }
 }
 
+/*
 void timer_callback_f(void* arg)
 {
+    //ETS_GPIO_INTR_DISABLE();
     sync_RTC_NTP();
+    //ETS_GPIO_INTR_ENABLE();
 }
+*/
