@@ -15,17 +15,22 @@ const char * MY_WIFI_SSID = "Shen Family Mansion";
 const char * MY_WIFI_PASSWORD = "guest@shen";
 const char * ntpServerName = "pool.ntp.org";
 const int timeZone = 8;
-
 #define LocalPort 8888      // local port to listen for UDP packets
 WiFiUDP Udp;
 DS3232RTC RTC;
+#define USE_NTP_SYNC_IN_LOOP
+#define SYNC_NTP_LOOP_FREQUENCY 10  // after how many loop
+//#define USE_NTP_SYNC_TIMER    // still can't working
+//#define SYNC_NTP_TIMER_FREQUENCY 30000  // after how many milliseconds
+#define USE_SERIAL_TIME_SYNC
 
-// NTP
-time_t getNtpTime();
 void print_digitalClock();
 void printDigits(int digits);
-void sendNTPpacket(IPAddress &NTP_address);
 
+#if defined(USE_NTP_SYNC_TIMER) || defined(USE_NTP_SYNC_IN_LOOP)
+// NTP
+time_t getNtpTime();
+void sendNTPpacket(IPAddress &NTP_address);
 // Sync
 extern "C"
 {
@@ -33,10 +38,22 @@ extern "C"
 }
 void sync_RTC_NTP();
 static bool sync_RTC_NTP_succeed = false;
+#endif
+
+#ifdef USE_NTP_SYNC_TIMER
 /*
 static os_timer_t sync_timer;
 void timer_callback_f(void* arg);
 */
+#endif
+
+#ifdef USE_NTP_SYNC_IN_LOOP
+#endif
+
+#ifdef USE_SERIAL_TIME_SYNC
+time_t getSerialTime();
+void sync_RTC_Serial();
+#endif
 
 // WiFi
 static bool WiFi_is_Connected;
@@ -85,47 +102,42 @@ void setup()
     //setSyncProvider(RTC.get);
     //setSyncInterval(300);
 
+#ifdef USE_NTP_SYNC_TIMER
 /*
     //timer usage:https://www.espressif.com/sites/default/files/documentation/2c-esp8266_non_os_sdk_api_reference_en.pdf
     //3.1. Software Timer
     os_timer_setfn(&sync_timer, timer_callback_f, NULL);
-    os_timer_arm(&sync_timer, 30000, true); //parameter 2 => milliseconds between sync, 3 => repeat
+    os_timer_arm(&sync_timer, SYNC_NTP_TIMER_FREQUENCY, true); //parameter 2 => milliseconds between sync, 3 => repeat
 */
+#endif
 }
 
 void loop()
 {
     Check_WiFi_Status();    //check if WIFI still connected
+
+#ifdef USE_NTP_SYNC_IN_LOOP
+    static int count = 0;
+    if(count == 0)
+    {
+        sync_RTC_NTP();
+        count = SYNC_NTP_LOOP_FREQUENCY;
+    }
+    else
+    {
+        count--;
+    }
+#endif
+
+#ifdef USE_SERIAL_TIME_SYNC
+    if(Serial.available() >= 12)    // usage: yyyy,mm,dd,hh,mm,ss
+        sync_RTC_Serial();
+#endif
+
+    Serial.print("RTC time: ");
     print_digitalClock(RTC.get());
     delay(3000);
-    sync_RTC_NTP();
-    delay(3000);
-    if (Serial.available() >= 12) {
-        // note that the tmElements_t Year member is an offset from 1970,
-        // but the RTC wants the last two digits of the calendar year.
-        // use the convenience macros from the Time Library to do the conversions.
-        tmElements_t tm;
-        int y = Serial.parseInt();
-        if (y >= 100 && y < 1000)
-            Serial.println("Error: Year must be two digits or four digits!");
-        else {
-            if (y >= 1000)
-                tm.Year = CalendarYrToTm(y);
-            else    // (y < 100)
-                tm.Year = y2kYearToTm(y);
-            tm.Month = Serial.parseInt();
-            tm.Day = Serial.parseInt();
-            tm.Hour = Serial.parseInt();
-            tm.Minute = Serial.parseInt();
-            tm.Second = Serial.parseInt();
-            time_t newtime = makeTime(tm);
-            RTC.set(newtime);        // use the time_t value to ensure correct weekday is set
-            Serial.print("RTC set to: ");
-            print_digitalClock(newtime);
-            // dump any extraneous input
-            while (Serial.available() > 0) Serial.read();
-        }
-    }
+
 }
 
 // print time_t object
@@ -153,6 +165,7 @@ void printDigits(int digits)
     Serial.print(digits);
 }
 
+#if defined(USE_NTP_SYNC_TIMER) || defined(USE_NTP_SYNC_IN_LOOP)
 /*-------- NTP code ----------*/
 #define NTP_PACKET_SIZE 48          // NTP time is in the first 48 bytes of message
 byte packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming & outgoing packets
@@ -189,7 +202,6 @@ time_t getNtpTime()
     Serial.println("No NTP Response :-(");
     return 0; // return 0 if unable to get the time
 }
-
 // send an NTP request to the time server at the given address
 void sendNTPpacket(IPAddress &NTP_address)
 {
@@ -212,10 +224,11 @@ void sendNTPpacket(IPAddress &NTP_address)
     Udp.write(packetBuffer, NTP_PACKET_SIZE);
     Udp.endPacket();
 }
-
 void sync_RTC_NTP()
 {
+    // sync RTC with NTP
     time_t ntp_time = getNtpTime();
+    Serial.print("NTP time: ");
     print_digitalClock(ntp_time);
     if(!ntp_time)
     {
@@ -229,7 +242,9 @@ void sync_RTC_NTP()
         Serial.println("Sync RTC with NTP succeed");
     }
 }
+#endif
 
+#ifdef USE_NTP_SYNC_TIMER
 /*
 void timer_callback_f(void* arg)
 {
@@ -238,3 +253,51 @@ void timer_callback_f(void* arg)
     //ETS_GPIO_INTR_ENABLE();
 }
 */
+#endif
+
+#ifdef USE_SERIAL_TIME_SYNC
+time_t getSerialTime()
+{
+    // note that the tmElements_t Year member is an offset from 1970,
+    // but the RTC wants the last two digits of the calendar year.
+    // use the convenience macros from the Time Library to do the conversions.
+    tmElements_t tm;
+    int y = Serial.parseInt();
+    if (y >= 100 && y < 1000)
+    {
+        Serial.println("Error: Year must be two digits or four digits!");
+        return 0;
+    }
+    else
+    {
+        if (y >= 1000)
+            tm.Year = CalendarYrToTm(y);
+        else    // (y < 100)
+            tm.Year = y2kYearToTm(y);
+        tm.Month = Serial.parseInt();
+        tm.Day = Serial.parseInt();
+        tm.Hour = Serial.parseInt();
+        tm.Minute = Serial.parseInt();
+        tm.Second = Serial.parseInt();
+        return makeTime(tm);
+    }
+}
+void sync_RTC_Serial()
+{
+    // sync RTC with Serial
+    time_t serial_time = getSerialTime();
+    Serial.print("Serial time: ");
+    print_digitalClock(serial_time);
+    if(!serial_time)
+    {
+        Serial.println("Sync RTC with Serial failed");
+    }
+    else
+    {
+        RTC.set(serial_time);        // use the time_t value to ensure correct weekday is set
+        Serial.println("Sync RTC with Serial succeed");
+    }
+    // dump any extraneous input
+    while (Serial.available() > 0) Serial.read();
+}
+#endif
