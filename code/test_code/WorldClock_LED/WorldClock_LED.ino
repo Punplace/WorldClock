@@ -7,10 +7,14 @@
  */
 
 #include <ESP8266WiFi.h>
-#include "CUSTOM_SETTING.hpp"
 #include "WorldClock_LED.hpp"
-//#include <Adafruit_NeoPixel.h>
-//#include "library/Adafruit_NeoPixel/Adafruit_NeoPixel.cpp"
+
+// GPIO setting
+const uint8_t LED_WIRED_PIN = D5;
+
+// WiFi setting
+const char * MY_WIFI_SSID = "WIFI_SSID";
+const char * MY_WIFI_PASSWORD = "WIFI_PASSWORD";
 
 static bool WiFi_is_Connected;
 inline void Check_WiFi_Status()
@@ -57,8 +61,8 @@ void setup()
 
 void loop()
 {
-////////////////////// check if WIFI still connected //////////////////////
-    Check_WiFi_Status();
+
+    Check_WiFi_Status();    //check if WIFI still connected
 
     int hour = random(0, 23);
     int minute = random(0, 59);
