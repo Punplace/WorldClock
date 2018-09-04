@@ -1,6 +1,0 @@
-[submodule "code/library/DHT-sensor-library"]
-	path = code/library/DHT-sensor-library
-	url = https://github.com/adafruit/DHT-sensor-library.git
-[submodule "code/library/Adafruit_NeoPixel"]
-	path = code/library/Adafruit_NeoPixel
-	url = https://github.com/adafruit/Adafruit_NeoPixel.git
