@@ -1,5 +1,5 @@
 /*
- * Version 
+ * Version 1.1
  * Author: WildfootW
  * GitHub: github.com/Wildfoot
  * Copyright (C) 2018 WildfootW All rights reserved.
@@ -17,11 +17,11 @@ public:
     ~WorldClock_LED();
 
     void show_digits(uint8_t number);       // from 0 to 99
-    void show_greeting(int hour);           // from 0 to 23
-    void show_minute(int minute);           // from 0 to 59
-    void show_hour(int hour, int minute);
-    void show_temperature(int temperature);
-    void show_humidity(int humidity);
+    void show_greeting(uint8_t hour);           // from 0 to 23
+    void show_minute(uint8_t minute);           // from 0 to 59
+    void show_hour(uint8_t hour, uint8_t minute);
+    void show_temperature(uint8_t temperature);
+    void show_humidity(uint8_t humidity);
 private:
     int select_color();
     struct text_struct
@@ -46,7 +46,7 @@ private:
     static const graph_struct digit_in_ones[10], digit_in_tens[10];
     void show_text(const text_struct& text_s, bool progressively = true);
     void set_graph(const graph_struct& graph);
-    void show_text_and_graph(const text_struct& text_s, int number);
+    void show_text_and_graph(const text_struct& text_s, uint8_t number);
 };
 
 WorldClock_LED::WorldClock_LED(void):
@@ -89,7 +89,7 @@ void WorldClock_LED::show_text(const text_struct& text_s, bool progressively)
         }
     }
 }
-void WorldClock_LED::show_greeting(int hour)
+void WorldClock_LED::show_greeting(uint8_t hour)
 {
     if(hour >= 1 && hour <= 11)
     {
@@ -113,7 +113,7 @@ void WorldClock_LED::show_greeting(int hour)
         show_text(normal_texts[9]); //SLEEP
     }
 }
-void WorldClock_LED::show_minute(int minute)
+void WorldClock_LED::show_minute(uint8_t minute)
 {
     bool over_half_hour = false;
     minute = minute - minute % 5;
@@ -153,7 +153,7 @@ void WorldClock_LED::show_minute(int minute)
     else
         show_text(minute_texts[3]); //PAST
 }
-void WorldClock_LED::show_hour(int hour, int minute)
+void WorldClock_LED::show_hour(uint8_t hour, uint8_t minute)
 {
     bool is_afternoon = false;
     if(hour >= 12)
@@ -170,15 +170,15 @@ void WorldClock_LED::show_hour(int hour, int minute)
     if(is_afternoon)
         show_text(hour_texts[13]);  //PM
 }
-void WorldClock_LED::show_temperature(int temperature)
+void WorldClock_LED::show_temperature(uint8_t temperature)
 {
     show_text_and_graph(normal_texts[10], temperature);
 }
-void WorldClock_LED::show_humidity(int humidity)
+void WorldClock_LED::show_humidity(uint8_t humidity)
 {
     show_text_and_graph(normal_texts[11], humidity);
 }
-void WorldClock_LED::show_text_and_graph(const text_struct& text_s, int number)
+void WorldClock_LED::show_text_and_graph(const text_struct& text_s, uint8_t number)
 {
     show_text(text_s, false);
     show();

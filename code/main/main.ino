@@ -1,5 +1,5 @@
 /*
- * Version 
+ * Version 1.00
  * Author: WildfootW
  * GitHub: github.com/Wildfoot
  * Copyright (C) 2018 WildfootW All rights reserved.
@@ -155,17 +155,24 @@ void loop()
     // Read temperature as Celsius (the default)
     float temperature = dht.readTemperature();
     // Compute heat index in Celsius (isFahreheit = false)
-    float hic = dht.computeHeatIndex(temperature, h, false);
+    float hic = dht.computeHeatIndex(temperature, humidity, false);
     Serial.print("Humidity: ");
     Serial.println(humidity);
     Serial.print("Temperature: ");
     Serial.println(temperature);
-    LED_strip->clear();
-    LED_strip->show_temperature(temperature);
-    delay(2500);
-    LED_strip->clear();
-    LED_strip->show_humidity(humidity);
-    delay(2500);
+    if(isnan(temperature) || isnan(humidity))
+    {
+        Serial.println("Failed to read from DHT sensor!");
+    }
+    else
+    {
+        LED_strip->clear();
+        LED_strip->show_temperature(temperature);
+        delay(2500);
+        LED_strip->clear();
+        LED_strip->show_humidity(humidity);
+        delay(2500);
+    }
 }
 
 // print time_t object
